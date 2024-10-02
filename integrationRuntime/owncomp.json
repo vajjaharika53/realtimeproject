@@ -1,0 +1,6 @@
+{
+	"name": "owncomp",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
