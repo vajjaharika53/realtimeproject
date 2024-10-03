@@ -1,0 +1,36 @@
+{
+	"name": "SqlServer1",
+	"properties": {
+		"parameters": {
+			"servername": {
+				"type": "String",
+				"defaultValue": "5CG7344W1H\\SQLEXPRESS03"
+			},
+			"username": {
+				"type": "String",
+				"defaultValue": "efndb"
+			},
+			"databasename": {
+				"type": "string",
+				"defaultValue": "efn"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Data Source=@{linkedService().servername};Initial Catalog=@{linkedService().databasename};User ID=@{linkedService().username}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "onpremissqlserverpassword"
+			}
+		},
+		"connectVia": {
+			"referenceName": "owncomputer",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
