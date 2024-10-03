@@ -7,7 +7,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "full load tablelist extraction",
+						"activity": "full load extraction",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -16,12 +16,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('full load tablelist extraction').output",
+						"value": "@activity('full load extraction').output.value",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "onpremise to azuresql",
+							"name": "onpremisesql to blobdatacontiner",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -96,7 +96,7 @@
 				}
 			},
 			{
-				"name": "full load tablelist extraction",
+				"name": "full load extraction",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -110,7 +110,6 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select * from [efnproject].[migrationtablelist]\nwhere TypeofLoad= 'full'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -121,7 +120,8 @@
 							"shemaname": "efnproject",
 							"tablename": "migrationtablelist"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			}
 		],
