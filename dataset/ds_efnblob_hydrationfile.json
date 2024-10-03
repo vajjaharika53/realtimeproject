@@ -21,7 +21,7 @@
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "@replace(substring(utcNow(),0,10),'_','/')",
+					"value": "@replace(substring(utcNow(),0,10),'-','/')",
 					"type": "Expression"
 				},
 				"container": "hydrationfile"

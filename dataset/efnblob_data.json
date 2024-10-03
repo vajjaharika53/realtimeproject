@@ -1,0 +1,35 @@
+{
+	"name": "efnblob_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "efnblob",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"schemaname": {
+				"type": "String"
+			},
+			"tablename": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@concat(dataset().schemaname,'_',dataset().tablename,'.csv')",
+					"type": "Expression"
+				},
+				"folderPath": "@replace(substring(utcNow(),0,10),'-','/')",
+				"container": "data"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
