@@ -1,0 +1,32 @@
+{
+	"name": "ds_efnsqlserver_tablelist",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "efnsqlserver",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"shemaname": {
+				"type": "String",
+				"defaultValue": "efnproject"
+			},
+			"tablename": {
+				"type": "String",
+				"defaultValue": "migrationtablelist"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().shemaname",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tablename",
+				"type": "Expression"
+			}
+		}
+	}
+}

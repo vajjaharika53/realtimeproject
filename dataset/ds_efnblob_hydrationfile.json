@@ -1,0 +1,57 @@
+{
+	"name": "ds_efnblob_hydrationfile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "efnblob",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"filename": {
+				"type": "String",
+				"defaultValue": "hydrationfile.csv"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@replace(substring(utcNow(),0,10),'_','/')",
+					"type": "Expression"
+				},
+				"container": "hydrationfile"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Id",
+				"type": "String"
+			},
+			{
+				"name": "SourceSchema",
+				"type": "String"
+			},
+			{
+				"name": "SourceTableName",
+				"type": "String"
+			},
+			{
+				"name": "TypeofLoad",
+				"type": "String"
+			},
+			{
+				"name": "Status",
+				"type": "String"
+			}
+		]
+	}
+}

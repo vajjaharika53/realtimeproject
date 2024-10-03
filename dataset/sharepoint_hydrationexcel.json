@@ -1,0 +1,42 @@
+{
+	"name": "sharepoint_hydrationexcel",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "efnblob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Sheet1",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "hydra.xlsx",
+				"container": "sharepoint"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "Id",
+				"type": "String"
+			},
+			{
+				"name": "SourceSchema",
+				"type": "String"
+			},
+			{
+				"name": "SourceTableName",
+				"type": "String"
+			},
+			{
+				"name": "TypeofLoad",
+				"type": "String"
+			},
+			{
+				"name": "Status",
+				"type": "String"
+			}
+		]
+	}
+}
