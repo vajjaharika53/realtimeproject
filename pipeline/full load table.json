@@ -1,0 +1,130 @@
+{
+	"name": "full load table",
+	"properties": {
+		"activities": [
+			{
+				"name": "irrations for full load",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "full load tablelist extraction",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('full load tablelist extraction').output",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "onpremise to azuresql",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlServerSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "onpremisesqlserver",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema": {
+											"value": "@item().SourceSchema",
+											"type": "Expression"
+										},
+										"tablename": {
+											"value": "@item().SourceTableName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "efnblob_data",
+									"type": "DatasetReference",
+									"parameters": {
+										"schemaname": {
+											"value": "@item().SourceSchema",
+											"type": "Expression"
+										},
+										"tablename": {
+											"value": "@item().SourceTableName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "full load tablelist extraction",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select * from [efnproject].[migrationtablelist]\nwhere TypeofLoad= 'full'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_efnsqlserver_tablelist",
+						"type": "DatasetReference",
+						"parameters": {
+							"shemaname": "efnproject",
+							"tablename": "migrationtablelist"
+						}
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
