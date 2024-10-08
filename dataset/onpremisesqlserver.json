@@ -7,7 +7,7 @@
 			"parameters": {
 				"servername": "5CG7344W1H\\SQLEXPRESS03",
 				"username": "efndb",
-				"databasename": "efn"
+				"databasename": "project"
 			}
 		},
 		"parameters": {

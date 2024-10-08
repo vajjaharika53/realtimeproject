@@ -110,6 +110,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT  * FROM [efnproject].[migrationtablelist]\nwhere TypeofLoad='full'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
