@@ -89,16 +89,22 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"policy": {
-					"elapsedTimeMetric": {}
+				"linkedServiceName": {
+					"referenceName": "efnsqlserver",
+					"type": "LinkedServiceReference"
 				},
-				"annotations": []
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/efnsqlserver')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_efnblob_hydrationfile')]",
@@ -193,6 +199,43 @@
 						"value": "@dataset().tablename",
 						"type": "Expression"
 					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/efnsqlserver')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_efnsqlserver_watermarktable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "efnsqlserver",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "tablename",
+						"type": "varchar"
+					},
+					{
+						"name": "watermarkDateTime",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "efnproject",
+					"table": "watermarktable"
 				}
 			},
 			"dependsOn": [
@@ -473,6 +516,24 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/onpremise__sqlserver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/onpremisesqlserver')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -523,7 +584,7 @@
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "full load extraction",
+								"activity": "fetch fullload table",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -532,7 +593,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('full load extraction').output.value",
+								"value": "@activity('fetch fullload table').output.value",
 								"type": "Expression"
 							},
 							"activities": [
@@ -612,7 +673,7 @@
 						}
 					},
 					{
-						"name": "full load extraction",
+						"name": "fetch fullload table",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -654,6 +715,254 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/incremental load')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "fetching incremental tables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT  * FROM [efnproject].[migrationtablelist]\nwhere TypeofLoad='inc'",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_efnsqlserver_tablelist",
+								"type": "DatasetReference",
+								"parameters": {
+									"shemaname": "efnproject",
+									"tablename": "migrationtablelist"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "irrations for incremetal load",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "fetching incremental tables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('fetching incremental tables').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "fetching  watermarkDateTime from watermarktable",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "@concat('select watermarkDateTime from [efnproject].[watermarktable]\nwhere tablename =''',item().SourceTableName,'''')",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_efnsqlserver_watermarktable",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"firstRowOnly": false
+									}
+								},
+								{
+									"name": "max modifieddate from onpremise",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "@concat('select max(ModifiedDate) as maxmodifieddate from ', item().SourceSchema,'.',item().SourceTableName )",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "onpremise__sqlserver",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"firstRowOnly": false
+									}
+								},
+								{
+									"name": "fetch incremental records",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "fetching  watermarkDateTime from watermarktable",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										},
+										{
+											"activity": "max modifieddate from onpremise",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "@concat('select * from ',item().SourceSchema,'.',item().SourceTableName,'where modifieddate >''',activity('fetching  watermarkDateTime from watermarktable').output.firstrow.watermarkDateTime,''' and modifieddate <=''',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,'''')",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "AzureSqlTable1",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "efnblob_data",
+											"type": "DatasetReference",
+											"parameters": {
+												"schemaname": {
+													"value": "@item().SourceSchema",
+													"type": "Expression"
+												},
+												"tablename": {
+													"value": "@item().SourceTableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "update watermarkdate",
+									"type": "Script",
+									"dependsOn": [
+										{
+											"activity": "fetch incremental records",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"linkedServiceName": {
+										"referenceName": "efnsqlserver",
+										"type": "LinkedServiceReference"
+									},
+									"typeProperties": {
+										"scripts": [
+											{
+												"type": "Query",
+												"text": {
+													"value": "@concat('update [efnproject].[watermarktable] set watermarkDateTime',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,''' where tablename=''',item().SourceTableName,'''')",
+													"type": "Expression"
+												}
+											}
+										],
+										"scriptBlockExecutionTimeout": "02:00:00"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_efnsqlserver_tablelist')]",
+				"[concat(variables('factoryId'), '/datasets/ds_efnsqlserver_watermarktable')]",
+				"[concat(variables('factoryId'), '/datasets/onpremise__sqlserver')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
+				"[concat(variables('factoryId'), '/datasets/efnblob_data')]",
+				"[concat(variables('factoryId'), '/linkedServices/efnsqlserver')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/master pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -677,7 +986,7 @@
 						}
 					},
 					{
-						"name": "Execute Pipeline1",
+						"name": "full load",
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
@@ -699,6 +1008,30 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "incremeental load",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "full load",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "incremental load",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"policy": {
@@ -708,7 +1041,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/hydrationfile sharepoint to hydration contonier')]",
-				"[concat(variables('factoryId'), '/pipelines/full load table')]"
+				"[concat(variables('factoryId'), '/pipelines/full load table')]",
+				"[concat(variables('factoryId'), '/pipelines/incremental load')]"
 			]
 		}
 	]
