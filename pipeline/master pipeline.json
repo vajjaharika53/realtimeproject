@@ -19,7 +19,7 @@
 				}
 			},
 			{
-				"name": "Execute Pipeline1",
+				"name": "full load",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -36,6 +36,29 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "full load table",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "incremeental load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "full load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "incremental load",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true

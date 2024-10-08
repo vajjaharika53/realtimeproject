@@ -7,7 +7,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "full load extraction",
+						"activity": "fetch fullload table",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('full load extraction').output.value",
+						"value": "@activity('fetch fullload table').output.value",
 						"type": "Expression"
 					},
 					"activities": [
@@ -96,7 +96,7 @@
 				}
 			},
 			{
-				"name": "full load extraction",
+				"name": "fetch fullload table",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {

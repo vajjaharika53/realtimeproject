@@ -1,0 +1,32 @@
+{
+	"name": "ds_efnsqlserver_watermarktable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "efnsqlserver",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tablename",
+				"type": "varchar"
+			},
+			{
+				"name": "watermarkDateTime",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "efnproject",
+			"table": "watermarktable"
+		}
+	}
+}
