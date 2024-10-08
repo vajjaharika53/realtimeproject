@@ -89,6 +89,18 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_efnblob_hydrationfile')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -294,7 +306,7 @@
 					},
 					"databasename": {
 						"type": "string",
-						"defaultValue": "efn"
+						"defaultValue": "project"
 					}
 				},
 				"annotations": [],
@@ -471,7 +483,7 @@
 					"parameters": {
 						"servername": "5CG7344W1H\\SQLEXPRESS03",
 						"username": "efndb",
-						"databasename": "efn"
+						"databasename": "project"
 					}
 				},
 				"parameters": {
@@ -614,6 +626,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT  * FROM [efnproject].[migrationtablelist]\nwhere TypeofLoad='full'",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -662,6 +675,30 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Execute Pipeline1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "hydration file",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "full load table",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"policy": {
@@ -670,7 +707,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/hydrationfile sharepoint to hydration contonier')]"
+				"[concat(variables('factoryId'), '/pipelines/hydrationfile sharepoint to hydration contonier')]",
+				"[concat(variables('factoryId'), '/pipelines/full load table')]"
 			]
 		}
 	]
