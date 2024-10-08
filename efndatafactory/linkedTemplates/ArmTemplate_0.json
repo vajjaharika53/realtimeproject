@@ -857,7 +857,7 @@
 										"source": {
 											"type": "AzureSqlSource",
 											"sqlReaderQuery": {
-												"value": "@concat('select * from ',item().SourceSchema,'.',item().SourceTableName,'where modifieddate >''',activity('fetching  watermarkDateTime from watermarktable').output.firstrow.watermarkDateTime,''' and modifieddate <=''',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,'''')",
+												"value": "@concat('select * from ',item().SourceSchema,'.',item().SourceTableName,' where modifieddate >''',activity('fetching  watermarkDateTime from watermarktable').output.watermarkDateTime,''' and modifieddate <=''',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,'''')",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
