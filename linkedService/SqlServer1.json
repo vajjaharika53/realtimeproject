@@ -1,6 +1,7 @@
 {
 	"name": "SqlServer1",
 	"properties": {
+		"description": "onpremisesql",
 		"parameters": {
 			"servername": {
 				"type": "String",
@@ -12,7 +13,7 @@
 			},
 			"databasename": {
 				"type": "string",
-				"defaultValue": "efn"
+				"defaultValue": "project"
 			}
 		},
 		"annotations": [],
@@ -31,7 +32,6 @@
 		"connectVia": {
 			"referenceName": "owncomputer",
 			"type": "IntegrationRuntimeReference"
-		},
-		"description": "onpremisesql"
+		}
 	}
 }
