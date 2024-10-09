@@ -3,7 +3,12 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "SqlServer1",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"servername": "5CG7344W1H\\SQLEXPRESS03",
+				"username": "efndb",
+				"databasename": "project"
+			}
 		},
 		"annotations": [],
 		"type": "SqlServerTable",
