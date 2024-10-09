@@ -451,9 +451,9 @@
 									"userProperties": [],
 									"typeProperties": {
 										"source": {
-											"type": "AzureSqlSource",
+											"type": "SqlServerSource",
 											"sqlReaderQuery": {
-												"value": "@concat('select * from ',item().SourceSchema,'.',item().SourceTableName,' where modifieddate >''',activity('fetching  watermarkDateTime from watermarktable').output.watermarkDateTime,''' and modifieddate <=''',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,'''')",
+												"value": "@concat('select * from ', item().SourceSchema, '.', item().SourceTableName, \n       ' where modifieddate >''', \n       activity('fetching  watermarkDateTime from watermarktable').output.value[0].watermarkDateTime, \n       ''' and modifieddate <= ''', \n       activity('max modifieddate from onpremise').output.value[0].maxmodifieddate, \n       '''')\n",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
@@ -482,7 +482,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "AzureSqlTable1",
+											"referenceName": "onpremise__sqlserver",
 											"type": "DatasetReference",
 											"parameters": {}
 										}
@@ -532,7 +532,7 @@
 											{
 												"type": "Query",
 												"text": {
-													"value": "@concat('update [efnproject].[watermarktable] set watermarkDateTime',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,''' where tablename=''',item().SourceTableName,'''')",
+													"value": "@concat('update [efnproject].[watermarktable] set watermarkDateTime =''',activity('max modifieddate from onpremise').output.value[0].maxmodifieddate,''' where tablename=''',item().SourceTableName,'''')",
 													"type": "Expression"
 												}
 											}
@@ -553,7 +553,6 @@
 				"[concat(variables('factoryId'), '/datasets/ds_efnsqlserver_tablelist')]",
 				"[concat(variables('factoryId'), '/datasets/ds_efnsqlserver_watermarktable')]",
 				"[concat(variables('factoryId'), '/datasets/onpremise__sqlserver')]",
-				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
 				"[concat(variables('factoryId'), '/datasets/efnblob_data')]",
 				"[concat(variables('factoryId'), '/linkedServices/efnsqlserver')]"
 			]
@@ -845,7 +844,12 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "SqlServer1",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"servername": "5CG7344W1H\\SQLEXPRESS03",
+						"username": "efndb",
+						"databasename": "project"
+					}
 				},
 				"annotations": [],
 				"type": "SqlServerTable",
