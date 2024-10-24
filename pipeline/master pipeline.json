@@ -63,6 +63,52 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "data merging notebook",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "incremeental load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "data merging",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "reporting analysis notebook",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "data merging notebook",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "reporting analysis",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"annotations": []
