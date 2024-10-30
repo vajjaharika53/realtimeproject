@@ -15,7 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/migration/3 Reporting Analysis"
+					"notebookPath": "/migration/realtimeproject/3 Reporting Analysis"
 				},
 				"linkedServiceName": {
 					"referenceName": "AzureDatabricks1",

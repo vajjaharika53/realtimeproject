@@ -15,7 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/migration/2 Delta Records Merge Notebook"
+					"notebookPath": "/migration/realtimeproject/2 Delta Records Merge Notebook"
 				},
 				"linkedServiceName": {
 					"referenceName": "AzureDatabricks1",
